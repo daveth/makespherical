@@ -154,13 +154,12 @@ end
 
 hook.Add( "AdvDupe_FinishPasting", "MakeSphericalFixLegacyDupes", function()
 	
-	for _, v in pairs( LegacyProcessQue ) do
+	for k, v in pairs( LegacyProcessQue ) do
 		
 		MakeSphere( unpack( v ) )
+		LegacyProcessQue[ k ] = nil
 		
 	end
-	
-	LegacyProcessQue = {}
 
 end )
 
