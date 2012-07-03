@@ -54,6 +54,7 @@ function MakeSphere( Ply, Ent, Data )
 	
 	if not Data.mass then
 		
+		print( "Legacy Dupe" )
 		local OBB = Ent:OBBMaxs() - Ent:OBBMins()
 		if not Ent.noradius then Ent.noradius = math.max( OBB.x, OBB.y, OBB.z) / 2 end
 		
@@ -158,6 +159,8 @@ hook.Add( "AdvDupe_FinishPasting", "MakeSphericalFixLegacyDupes", function()
 		MakeSphere( unpack( v ) )
 		
 	end
+	
+	LegacyProcessQue = {}
 
 end )
 
