@@ -44,20 +44,52 @@ local function IsItOkToFuckWith( This )
 	
 end
 
+local LegacyProcessQue = {}
+
 function MakeSphere( Ply, Ent, Data )
 	
 	if not SERVER then return end
+	
+	-- Check if legacy dupe
+	
+	if not Data.mass then
+		
+		local OBB = Ent:OBBMaxs() - Ent:OBBMins()
+		if not Ent.noradius then Ent.noradius = math.max( OBB.x, OBB.y, OBB.z) / 2 end
+		
+		local Args = 
+		{
+			Ply, 
+			Ent,  
+			{
+				noradius = Ent.noradius,
+				mass = Ent:GetPhysicsObject():GetMass(),
+				radius = Ent.noradius,
+				enabled = true
+			}
+		}
+		
+		-- Add it to a que of ents to process later
+		table.insert( LegacyProcessQue, Args )
+		
+		return
+		
+	end
+	
 	local PhysObj = Ent:GetPhysicsObject()
 	local MakeConstraints = false
 	local ConstraintsTable = {}
 	local IsMoveable = PhysObj:IsMoveable()
 	local IsSleep = PhysObj:IsAsleep()
 	
+	-- no need to do anything if not enabled
 	if Data.enabled then
 	
 		local Radius = math.Clamp( Data.radius, 1, 200 )
-		if Ent:IsConstrained() then
 		
+		-- need to remove re-apply constraints afterward
+		if Ent:IsConstrained() then
+			
 			MakeConstraints = true
 			for _, Const in pairs( constraint.GetTable( Ent ) ) do
 			
@@ -71,18 +103,15 @@ function MakeSphere( Ply, Ent, Data )
 		Ent:PhysicsInitSphere( Radius , PhysObj:GetMaterial() )
 		Ent:SetCollisionBounds( Vector( -Radius, -Radius, -Radius ), Vector( Radius, Radius, Radius ) )
 		
-		local PhysObj = Ent:GetPhysicsObject()
-		PhysObj:SetMass( Data.mass )
-		PhysObj:EnableMotion( IsMoveable )
-		if !IsSleep then PhysObj:Wake() end
-	
 		if MakeConstraints then
-		
+			
+			-- re-apply constraints
 			for k, Constr in pairs( ConstraintsTable ) do
 			
 				local Factory = duplicator.ConstraintType[ Constr.Type ]
 				if !( Factory ) then break end
-
+				
+				-- set up args to be passed to factory function
 				local Args = {}
 				for i = 1, #Factory.Args do
 					
@@ -90,7 +119,8 @@ function MakeSphere( Ply, Ent, Data )
 					
 				end
 				
-				if Ent:GetClass() == "gmod_wheel" or Ent:GetClass() == "gmod_wire_wheel" then
+				-- wheels need the ent.motor value set to their motor constraint
+				if Ent:GetClass() == "gmod_wheel" or Ent:GetClass() == "gmod_wire_wheel" and Constr.Type == "motor" then
 				
 					timer.Simple( 0.01, function( Ent, Args )
 					
@@ -110,11 +140,26 @@ function MakeSphere( Ply, Ent, Data )
 		
 	end
 	
+	local PhysObj = Ent:GetPhysicsObject()
+	PhysObj:SetMass( Data.mass )
+	PhysObj:EnableMotion( IsMoveable )
+	if !IsSleep then PhysObj:Wake() end
+	
 	--Ent.CanPGBM = Data.enabled and false or true
 	Ent.noradius = Data.noradius
 	duplicator.StoreEntityModifier( Ent, "sphere", Data )
 	
 end
+
+hook.Add( "AdvDupe_FinishPasting", "MakeSphericalFixLegacyDupes", function()
+	
+	for _, v in pairs( LegacyProcessQue ) do
+		
+		MakeSphere( unpack( v ) )
+		
+	end
+
+end )
 
 duplicator.RegisterEntityModifier( "sphere", MakeSphere )
 
@@ -180,6 +225,7 @@ function TOOL:Reload( trace )
 		enabled = false
 	}
 	
+	Ent:GetPhysicsObject():EnableMotion( false )
 	MakeSphere( self:GetOwner(), Ent, Data )
 	return true
 	
