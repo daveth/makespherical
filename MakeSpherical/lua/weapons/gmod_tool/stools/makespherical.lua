@@ -17,7 +17,8 @@ if CLIENT then
 		
 		panel:AddControl( "Header", { Text = "#Tool_MakeSpherical_name", Description = "Tool_MakeSpherical_desc" } )
 		
-		panel:AddControl( "Slider", {
+		panel:AddControl( "Slider", 
+		{
 			Label = "#MakeSpherical_radius",
 			Type = "Float",
 			Min = "1",
@@ -169,18 +170,24 @@ function TOOL:LeftClick( trace )
 
 	local Ent = trace.Entity
 	if !IsItOkToFuckWith( Ent ) then return false end
-	local OBB = Ent:OBBMaxs() - Ent:OBBMins()
-	if not Ent.noradius then Ent.noradius = math.max( OBB.x, OBB.y, OBB.z) / 2 end
+
+	if SERVER then
 	
-	local Data = 
-	{
-		noradius = Ent.noradius,
-		mass = Ent:GetPhysicsObject():GetMass(),
-		radius = Ent.noradius,
-		enabled = true
-	}
+		local OBB = Ent:OBBMaxs() - Ent:OBBMins()
+		if not Ent.noradius then Ent.noradius = math.max( OBB.x, OBB.y, OBB.z) / 2 end
 	
-	MakeSphere( self:GetOwner(), Ent, Data )
+		local Data = 
+		{
+			noradius = Ent.noradius,
+			mass = Ent:GetPhysicsObject():GetMass(),
+			radius = Ent.noradius,
+			enabled = true
+		}
+		
+		MakeSphere( self:GetOwner(), Ent, Data )
+		
+	end
+	
 	return true
 	
 end
@@ -189,18 +196,24 @@ function TOOL:RightClick( trace )
 
 	local Ent = trace.Entity
 	if !IsItOkToFuckWith( Ent ) then return false end
-	local OBB = Ent:OBBMaxs() - Ent:OBBMins()
-	if not Ent.noradius then Ent.noradius = math.max( OBB.x, OBB.y, OBB.z) / 2 end
 	
-	local Data = 
-	{
-		noradius = Ent.noradius,
-		mass = Ent:GetPhysicsObject():GetMass(),
-		radius = self:GetClientNumber( "radius" ),
-		enabled = true
-	}
+	if SERVER then
 	
-	MakeSphere( self:GetOwner(), Ent, Data )
+		local OBB = Ent:OBBMaxs() - Ent:OBBMins()
+		if not Ent.noradius then Ent.noradius = math.max( OBB.x, OBB.y, OBB.z) / 2 end
+	
+		local Data = 
+		{
+			noradius = Ent.noradius,
+			mass = Ent:GetPhysicsObject():GetMass(),
+			radius = self:GetClientNumber( "radius" ),
+			enabled = true
+		}
+	
+		MakeSphere( self:GetOwner(), Ent, Data )
+		
+	end
+	
 	return true
 		
 end
@@ -217,18 +230,19 @@ function TOOL:Reload( trace )
 		Ent:SetSolid( SOLID_VPHYSICS )
 		Ent:GetPhysicsObject():Wake()
 		
+		local Data = 
+		{
+			noradius = Ent.noradius,
+			mass = Ent:GetPhysicsObject():GetMass(),
+			radius = 0,
+			enabled = false
+		}
+		
+		Ent:GetPhysicsObject():EnableMotion( false )
+		MakeSphere( self:GetOwner(), Ent, Data )
+		
 	end
 	
-	local Data = 
-	{
-		noradius = Ent.noradius,
-		mass = Ent:GetPhysicsObject():GetMass(),
-		radius = 0,
-		enabled = false
-	}
-	
-	Ent:GetPhysicsObject():EnableMotion( false )
-	MakeSphere( self:GetOwner(), Ent, Data )
 	return true
 	
 end
