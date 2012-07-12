@@ -1,8 +1,6 @@
 
 /* 
-	MakeSpherical tool made by Dave
-		
-	Thanks to Divran for help busting bugs (and for teaching me how to make tools).
+	MakeSpherical tool made by Dave ( Falcqn )
 */
 
 if CLIENT then
@@ -47,7 +45,7 @@ end
 
 local LegacyProcessQue = {}
 
-function MakeSphere( Ply, Ent, Data )
+local function MakeSphere( Ply, Ent, Data )
 	
 	if not SERVER then return end
 	
@@ -55,7 +53,7 @@ function MakeSphere( Ply, Ent, Data )
 	
 	if not Data.mass then
 		
-		print( "Legacy Dupe" )
+		--print( "Legacy Dupe" )
 		local OBB = Ent:OBBMaxs() - Ent:OBBMins()
 		if not Ent.noradius then Ent.noradius = math.max( OBB.x, OBB.y, OBB.z) / 2 end
 		
@@ -84,62 +82,67 @@ function MakeSphere( Ply, Ent, Data )
 	local IsMoveable = PhysObj:IsMoveable()
 	local IsSleep = PhysObj:IsAsleep()
 	
-	-- no need to do anything if not enabled
-	if Data.enabled then
-	
-		local Radius = math.Clamp( Data.radius, 1, 200 )
+	local Radius = math.Clamp( Data.radius, 1, 200 )
 		
-		-- need to remove re-apply constraints afterward
-		if Ent:IsConstrained() then
-			
-			MakeConstraints = true
-			for _, Const in pairs( constraint.GetTable( Ent ) ) do
-			
-				table.insert( ConstraintsTable, Const )
-				
-			end
-			constraint.RemoveAll( Ent )
+	-- need to remove re-apply constraints afterward
+	if Ent:IsConstrained() then
+		
+		MakeConstraints = true
+		for _, Const in pairs( constraint.GetTable( Ent ) ) do
+		
+			table.insert( ConstraintsTable, Const )
 			
 		end
+		constraint.RemoveAll( Ent )
 		
+	end
+	
+	if Data.enabled then
+
 		Ent:PhysicsInitSphere( Radius , PhysObj:GetMaterial() )
 		Ent:SetCollisionBounds( Vector( -Radius, -Radius, -Radius ), Vector( Radius, Radius, Radius ) )
 		
-		if MakeConstraints then
+	else
+	
+		Ent:PhysicsInit( SOLID_VPHYSICS )
+		Ent:SetMoveType( MOVETYPE_VPHYSICS )
+		Ent:SetSolid( SOLID_VPHYSICS )
+	
+	end
+	
+	if MakeConstraints then
+		
+		-- re-apply constraints
+		for k, Constr in pairs( ConstraintsTable ) do
+		
+			local Factory = duplicator.ConstraintType[ Constr.Type ]
+			if !( Factory ) then break end
 			
-			-- re-apply constraints
-			for k, Constr in pairs( ConstraintsTable ) do
-			
-				local Factory = duplicator.ConstraintType[ Constr.Type ]
-				if !( Factory ) then break end
+			-- set up args to be passed to factory function
+			local Args = {}
+			for i = 1, #Factory.Args do
 				
-				-- set up args to be passed to factory function
-				local Args = {}
-				for i = 1, #Factory.Args do
-					
-					table.insert( Args, Constr[ Factory.Args[ i ] ] )
-					
-				end
-				
-				-- wheels need the ent.motor value set to their motor constraint
-				if Ent:GetClass() == "gmod_wheel" or Ent:GetClass() == "gmod_wire_wheel" and Constr.Type == "motor" then
-				
-					timer.Simple( 0.01, function( Ent, Args )
-					
-						Ent.Motor = Factory.Func( unpack( Args ) )
-					
-					end, Ent, Args )
-				
-				else
-				
-					timer.Simple( 0.01, Factory.Func, unpack( Args ) )
-				
-				end
+				table.insert( Args, Constr[ Factory.Args[ i ] ] )
 				
 			end
-		
+			
+			-- wheels need the ent.motor value set to their motor constraint
+			if Ent:GetClass() == "gmod_wheel" or Ent:GetClass() == "gmod_wire_wheel" and Constr.Type == "motor" then
+			
+				timer.Simple( 0.01, function( Ent, Args )
+				
+					Ent.Motor = Factory.Func( unpack( Args ) )
+				
+				end, Ent, Args )
+			
+			else
+			
+				timer.Simple( 0.01, Factory.Func, unpack( Args ) )
+			
+			end
+			
 		end
-		
+	
 	end
 	
 	local PhysObj = Ent:GetPhysicsObject()
@@ -170,11 +173,11 @@ function TOOL:LeftClick( trace )
 
 	local Ent = trace.Entity
 	if !IsItOkToFuckWith( Ent ) then return false end
-
-	if SERVER then
 	
-		local OBB = Ent:OBBMaxs() - Ent:OBBMins()
-		if not Ent.noradius then Ent.noradius = math.max( OBB.x, OBB.y, OBB.z) / 2 end
+	local OBB = Ent:OBBMaxs() - Ent:OBBMins()
+	if not Ent.noradius then Ent.noradius = math.max( OBB.x, OBB.y, OBB.z) / 2 end
+	
+	if SERVER then
 	
 		local Data = 
 		{
@@ -197,10 +200,11 @@ function TOOL:RightClick( trace )
 	local Ent = trace.Entity
 	if !IsItOkToFuckWith( Ent ) then return false end
 	
-	if SERVER then
+	local OBB = Ent:OBBMaxs() - Ent:OBBMins()
+	if not Ent.noradius then Ent.noradius = math.max( OBB.x, OBB.y, OBB.z) / 2 end
 	
-		local OBB = Ent:OBBMaxs() - Ent:OBBMins()
-		if not Ent.noradius then Ent.noradius = math.max( OBB.x, OBB.y, OBB.z) / 2 end
+	if SERVER then
+
 	
 		local Data = 
 		{
@@ -224,12 +228,7 @@ function TOOL:Reload( trace )
 	if !IsItOkToFuckWith( Ent ) then return false end
 	
 	if SERVER then
-	
-		Ent:PhysicsInit( SOLID_VPHYSICS )
-		Ent:SetMoveType( MOVETYPE_VPHYSICS )
-		Ent:SetSolid( SOLID_VPHYSICS )
-		Ent:GetPhysicsObject():Wake()
-		
+
 		local Data = 
 		{
 			noradius = Ent.noradius,
