@@ -35,8 +35,8 @@ TOOL.ClientConVar[ "radius" ] = "20"
 local function IsItOkToFuckWith( This )
 	
 	if !This || !This:IsValid() then return false end
-	--if This:GetClass() ~= "prop_physics" && !string.find( This:GetClass(), "gmod_" ) then return false end
-	--if string.find( This:GetClass(), "wheel" ) || string.find( This:GetClass(), "thruster" ) then return false end
+	if string.find( This:GetClass(), "npc_" ) || This:GetClass() == "player" then return false end
+	if This:GetMoveType() ~= MOVETYPE_VPHYSICS then return end
 	if SERVER and not This:GetPhysicsObject():IsValid() then return false end
 
 	return true

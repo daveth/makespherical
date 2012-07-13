@@ -4,7 +4,20 @@
 	Made by Dave ( Falcqn )
 */
 
+local function IsItOkToFuckWith( This )
+	
+	if !This || !This:IsValid() then return false end
+	if string.find( This:GetClass(), "npc_" ) || This:GetClass() == "player" then return false end
+	if This:GetMoveType() ~= MOVETYPE_VPHYSICS then return end
+	if SERVER and not This:GetPhysicsObject():IsValid() then return false end
+
+	return true
+	
+end
+
 local function MakeSphere( Ply, this, Data )
+	
+	if not IsItOkToFuckWith( this ) then return end
 	
 	local PhysObj = this:GetPhysicsObject()
 	local MakeConstraints = false
