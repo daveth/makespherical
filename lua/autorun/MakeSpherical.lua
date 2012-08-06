@@ -16,6 +16,7 @@ function MakeSpherical.CanTool( ent )
 	if (
 		not ent:IsValid()
 		or string.find( ent:GetClass(), "npc_" ) or ( ent:GetClass() == "player" )
+		or ( ent:GetClass() == "prop_ragdoll" )
 		or ( ent:GetMoveType() ~= MOVETYPE_VPHYSICS ) )
 		
 		then return false 
