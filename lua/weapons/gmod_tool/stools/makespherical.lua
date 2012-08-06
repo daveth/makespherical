@@ -1,6 +1,10 @@
+AddCSLuaFile( "makespherical.lua" )
 
-/* 
+/*
 	MakeSpherical tool made by Dave ( Falcqn )
+	Thanks to:
+		Divran
+		OmicroN
 */
 
 if CLIENT then
@@ -9,7 +13,6 @@ if CLIENT then
 	language.Add( "Tool_MakeSpherical_desc", "Gives entities a spherical collisions with a defined radius" )
 	language.Add( "Tool_MakeSpherical_0", "Left click to make an Ent have spherical collisions based on its size. Right click to set collisions with a custom radius" )
 	language.Add( "Tool_MakeSpherical_1", "Left click to make an Ent have spherical collisions based on its size. Right click to set collisions with a custom radius" )
-	language.Add( "MakeSpherical_radius", "Set radius: " )
 	
 	function TOOL.BuildCPanel( panel )
 		
@@ -17,228 +20,188 @@ if CLIENT then
 		
 		panel:AddControl( "Slider", 
 		{
-			Label = "#MakeSpherical_radius",
+			Label = "Set radius: ",
 			Type = "Float",
 			Min = "1",
 			Max = "200",
 			Command = "makespherical_radius"
 		})
-	
-end
-	
-end
-
-TOOL.Category		= "Construction"
-TOOL.Name			= "#MakeSpherical"
-TOOL.ClientConVar[ "radius" ] = "20"
-
-local function IsItOkToFuckWith( This )
-	
-	if !This || !This:IsValid() then return false end
-	if string.find( This:GetClass(), "npc_" ) || This:GetClass() == "player" then return false end
-	if This:GetMoveType() ~= MOVETYPE_VPHYSICS then return end
-	if SERVER and not This:GetPhysicsObject():IsValid() then return false end
-
-	return true
-	
-end
-
-local LegacyProcessQue = {}
-
-local function MakeSphere( Ply, Ent, Data )
-	
-	if not SERVER then return end
-	
-	-- Check if legacy dupe
-	
-	if not Data.mass then
 		
-		--print( "Legacy Dupe" )
-		local OBB = Ent:OBBMaxs() - Ent:OBBMins()
-		if not Ent.noradius then Ent.noradius = math.max( OBB.x, OBB.y, OBB.z) / 2 end
-		
-		local Args = 
+		panel:AddControl( "CheckBox",
 		{
-			Ply, 
-			Ent,  
-			{
-				noradius = Ent.noradius,
-				mass = Ent:GetPhysicsObject():GetMass(),
-				radius = Ent.noradius,
-				enabled = true
-			}
-		}
+			Label = "Offset render origin?",
+			Command = "makespherical_offset"
+		})
 		
-		-- Add it to a que of ents to process later
-		table.insert( LegacyProcessQue, Args )
+		panel:AddControl( "Label",
+		{
+			Text = "Note: This only changes the position the prop's model is drawn at, getting the position or bounding box center in Lua or in "
+					.. "E2 will give the exact same coordinates.\nThe prop's position will still be the center of the sphere."
+		})
 		
-		return
+		panel:AddControl( "Slider",
+		{
+			Label = "X Offset",
+			Type = "Float",
+			Min = "-100",
+			Max = "100",
+			Command = "makespherical_offset_x"
+		})
 		
+		panel:AddControl( "Slider",
+		{
+			Label = "Y Offset",
+			Type = "Float",
+			Min = "-100",
+			Max = "100",
+			Command = "makespherical_offset_y"
+		})
+		
+		panel:AddControl( "Slider",
+		{
+			Label = "Z Offset",
+			Type = "Float",
+			Min = "-100",
+			Max = "100",
+			Command = "makespherical_offset_z"
+		})
+		
+		panel:AddControl( "CheckBox",
+		{
+			Label = "Offset position by bounding box center instead",
+			Command = "makespherical_useobbcenter"
+		})
+	
 	end
-	
-	local PhysObj = Ent:GetPhysicsObject()
-	local MakeConstraints = false
-	local ConstraintsTable = {}
-	local IsMoveable = PhysObj:IsMoveable()
-	local IsSleep = PhysObj:IsAsleep()
-	
-	local Radius = math.Clamp( Data.radius, 1, 200 )
-		
-	-- need to remove re-apply constraints afterward
-	if Ent:IsConstrained() then
-		
-		MakeConstraints = true
-		for _, Const in pairs( constraint.GetTable( Ent ) ) do
-		
-			table.insert( ConstraintsTable, Const )
-			
-		end
-		constraint.RemoveAll( Ent )
-		
-	end
-	
-	if Data.enabled then
 
-		Ent:PhysicsInitSphere( Radius , PhysObj:GetMaterial() )
-		Ent:SetCollisionBounds( Vector( -Radius, -Radius, -Radius ), Vector( Radius, Radius, Radius ) )
-		
-	else
-	
-		Ent:PhysicsInit( SOLID_VPHYSICS )
-		Ent:SetMoveType( MOVETYPE_VPHYSICS )
-		Ent:SetSolid( SOLID_VPHYSICS )
-	
-	end
-	
-	if MakeConstraints then
-		
-		-- re-apply constraints
-		for k, Constr in pairs( ConstraintsTable ) do
-		
-			local Factory = duplicator.ConstraintType[ Constr.Type ]
-			if !( Factory ) then break end
-			
-			-- set up args to be passed to factory function
-			local Args = {}
-			for i = 1, #Factory.Args do
-				
-				table.insert( Args, Constr[ Factory.Args[ i ] ] )
-				
-			end
-			
-			-- wheels need the ent.motor value set to their motor constraint
-			if Ent:GetClass() == "gmod_wheel" or Ent:GetClass() == "gmod_wire_wheel" and Constr.Type == "motor" then
-			
-				timer.Simple( 0.01, function( Ent, Args )
-				
-					Ent.Motor = Factory.Func( unpack( Args ) )
-				
-				end, Ent, Args )
-			
-			else
-			
-				timer.Simple( 0.01, Factory.Func, unpack( Args ) )
-			
-			end
-			
-		end
-	
-	end
-	
-	local PhysObj = Ent:GetPhysicsObject()
-	PhysObj:SetMass( Data.mass )
-	PhysObj:EnableMotion( IsMoveable )
-	if !IsSleep then PhysObj:Wake() end
-	
-	--Ent.CanPGBM = Data.enabled and false or true
-	Ent.noradius = Data.noradius
-	duplicator.StoreEntityModifier( Ent, "sphere", Data )
-	
 end
 
-hook.Add( "AdvDupe_FinishPasting", "MakeSphericalFixLegacyDupes", function()
-	
-	for k, v in pairs( LegacyProcessQue ) do
-		
-		MakeSphere( unpack( v ) )
-		LegacyProcessQue[ k ] = nil
-		
-	end
+TOOL.Category = "Construction"
+TOOL.Name = "#MakeSpherical"
+TOOL.ClientConVar[ "radius" ] = "20"
+TOOL.ClientConVar[ "offset" ] = "0"
+TOOL.ClientConVar[ "offset_x" ] = "0"
+TOOL.ClientConVar[ "offset_y" ] = "0"
+TOOL.ClientConVar[ "offset_z" ] = "0"
+TOOL.ClientConVar[ "useobbcenter" ] = "0"
 
-end )
-
-duplicator.RegisterEntityModifier( "sphere", MakeSphere )
+MakeSpherical = MakeSpherical or {}
+local MakeSpherical = MakeSpherical
 
 function TOOL:LeftClick( trace )
 
-	local Ent = trace.Entity
-	if !IsItOkToFuckWith( Ent ) then return false end
+	local ent = trace.Entity
+	if not MakeSpherical.CanTool( ent ) then return false end
+	if not ent.noradius then
 	
-	local OBB = Ent:OBBMaxs() - Ent:OBBMins()
-	if not Ent.noradius then Ent.noradius = math.max( OBB.x, OBB.y, OBB.z) / 2 end
+		local OBB = ent:OBBMaxs() - ent:OBBMins()
+		ent.noradius = math.max( OBB.x, OBB.y, OBB.z) / 2 
+		
+	end
+	
+	local renderoffset
+	if self:GetClientNumber( "useobbcenter" ) == 1 then
+		
+		renderoffset = -ent:OBBCenter()
+			
+	else
+	
+		renderoffset = Vector( self:GetClientNumber( "offset_x" ), self:GetClientNumber( "offset_y" ), self:GetClientNumber( "offset_z" ) )
+		
+	end
 	
 	if SERVER then
-	
-		local Data = 
+		
+		local data = 
 		{
-			noradius = Ent.noradius,
-			mass = Ent:GetPhysicsObject():GetMass(),
-			radius = Ent.noradius,
-			enabled = true
+			noradius = ent.noradius,
+			radius = ent.noradius,
+			mass = ent:GetPhysicsObject():GetMass(),
+			enabled = true,
+			isrenderoffset = self:GetClientNumber( "offset" ),
+			renderoffset = renderoffset
 		}
 		
-		MakeSphere( self:GetOwner(), Ent, Data )
+		local constraintdata = MakeSpherical.CopyConstraintData( ent, true )
+		MakeSpherical.ApplySphericalCollisions( self:GetOwner(), ent, data )
+		timer.Simple( 0.01, MakeSpherical.ApplyConstraintData, ent, constraintdata )
 		
 	end
 	
 	return true
-	
+
 end
 
 function TOOL:RightClick( trace )
 
-	local Ent = trace.Entity
-	if !IsItOkToFuckWith( Ent ) then return false end
+	local ent = trace.Entity
+	if not MakeSpherical.CanTool( ent ) then return false end
+	if not ent.noradius then
 	
-	local OBB = Ent:OBBMaxs() - Ent:OBBMins()
-	if not Ent.noradius then Ent.noradius = math.max( OBB.x, OBB.y, OBB.z) / 2 end
+		local OBB = ent:OBBMaxs() - ent:OBBMins()
+		ent.noradius = math.max( OBB.x, OBB.y, OBB.z) / 2 
+		
+	end
+	
+	local renderoffset
+	if self:GetClientNumber( "useobbcenter" ) == 1 then
+		
+		renderoffset = -ent:OBBCenter()
+			
+	else
+	
+		renderoffset = Vector( self:GetClientNumber( "offset_x" ), self:GetClientNumber( "offset_y" ), self:GetClientNumber( "offset_z" ) )
+		
+	end
 	
 	if SERVER then
-
 	
-		local Data = 
+		local data = 
 		{
-			noradius = Ent.noradius,
-			mass = Ent:GetPhysicsObject():GetMass(),
+			noradius = ent.noradius,
 			radius = self:GetClientNumber( "radius" ),
-			enabled = true
+			mass = ent:GetPhysicsObject():GetMass(),
+			enabled = true,
+			isrenderoffset = self:GetClientNumber( "offset" ),
+			renderoffset = renderoffset
 		}
-	
-		MakeSphere( self:GetOwner(), Ent, Data )
+		
+		local constraintdata = MakeSpherical.CopyConstraintData( ent, true )
+		MakeSpherical.ApplySphericalCollisions( self:GetOwner(), ent, data )
+		timer.Simple( 0.01, MakeSpherical.ApplyConstraintData, ent, constraintdata )
 		
 	end
 	
 	return true
-		
+
 end
 
 function TOOL:Reload( trace )
 
-	local Ent = trace.Entity
-	if !IsItOkToFuckWith( Ent ) then return false end
+	local ent = trace.Entity
+	if not MakeSpherical.CanTool( ent ) then return false end
+	if not ent.noradius then
+	
+		local OBB = ent:OBBMaxs() - ent:OBBMins()
+		ent.noradius = math.max( OBB.x, OBB.y, OBB.z) / 2 
+		
+	end
 	
 	if SERVER then
-
-		local Data = 
+	
+		local data = 
 		{
-			noradius = Ent.noradius,
-			mass = Ent:GetPhysicsObject():GetMass(),
-			radius = 0,
-			enabled = false
+			noradius = ent.noradius,
+			radius = ent.noradius,
+			mass = ent:GetPhysicsObject():GetMass(),
+			enabled = false,
+			isrenderoffset = 0,
+			renderoffset = nil
 		}
 		
-		Ent:GetPhysicsObject():EnableMotion( false )
-		MakeSphere( self:GetOwner(), Ent, Data )
+		local constraintdata = MakeSpherical.CopyConstraintData( ent, true )
+		MakeSpherical.ApplySphericalCollisions( self:GetOwner(), ent, data )
+		timer.Simple( 0.01, MakeSpherical.ApplyConstraintData, ent, constraintdata )
 		
 	end
 	
