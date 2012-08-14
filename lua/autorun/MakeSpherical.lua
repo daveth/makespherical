@@ -1,4 +1,3 @@
-AddCSLuaFile( "MakeSpherical.lua" )
 
 /*
 	MakeSpherical tool made by Dave ( Falcqn )
@@ -7,9 +6,10 @@ AddCSLuaFile( "MakeSpherical.lua" )
 		OmicroN
 */
 
+AddCSLuaFile( "MakeSpherical.lua" )
+
 MakeSpherical = MakeSpherical or {}
 local MakeSpherical = MakeSpherical
-MakeSpherical.RenderOffsetEnts = {}
 
 function MakeSpherical.CanTool( ent )
 
@@ -17,27 +17,20 @@ function MakeSpherical.CanTool( ent )
 		not ent:IsValid()
 		or string.find( ent:GetClass(), "npc_" ) or ( ent:GetClass() == "player" )
 		or ( ent:GetClass() == "prop_ragdoll" )
-		or ( ent:GetMoveType() ~= MOVETYPE_VPHYSICS ) )
+		or ( ent:GetMoveType() ~= MOVETYPE_VPHYSICS )
+		or ( SERVER && not ent:GetPhysicsObject():IsValid() ) )
 		
 		then return false 
 	
 	end
-	
-	if SERVER then
-		
-		if not ent:GetPhysicsObject():IsValid() then 
-		
-			return false
-		
-		end
-		
-	end
-	
+
 	return true
 
 end
 
 if SERVER then
+	
+	MakeSpherical.RenderOffsetEnts = {}
 	
 	function MakeSpherical.ApplyLegacySphere( ply, ent, data )
 		
@@ -50,6 +43,9 @@ if SERVER then
 		-- In case the legacy dupe is old enough to not include these
 		data.mass = ent:GetPhysicsObject():GetMass() or data.mass
 		data.noradius = data.noradius or ent.noradius
+		data.isrenderoffset = 0
+		data.renderoffset = nil
+		data.obbcenter = ent:OBBCenter()
 
 		local phys = ent:GetPhysicsObject()
 		local ismove = phys:IsMoveable()
@@ -76,6 +72,7 @@ if SERVER then
 		if not issleep then phys:Wake() end
 		
 		ent.noradius = data.noradius
+		ent.obbcenter = data.obbcenter
 		duplicator.StoreEntityModifier( ent, "MakeSphericalCollisions", data )
 		duplicator.ClearEntityModifier( ent, "sphere" )
 	
@@ -247,17 +244,18 @@ if SERVER then
 		
 	end )
 	
+	duplicator.RegisterEntityModifier( "sphere", MakeSpherical.ApplyLegacySphere )
+	duplicator.RegisterEntityModifier( "MakeSphericalCollisions", MakeSpherical.ApplySphericalCollisions )
+	
 end
-
-duplicator.RegisterEntityModifier( "sphere", MakeSpherical.ApplyLegacySphere )
-duplicator.RegisterEntityModifier( "MakeSphericalCollisions", MakeSpherical.ApplySphericalCollisions )
 
 if CLIENT then
 	
-	local tempents = {}
+	local temp = {}
 	
 	usermessage.Hook( "MakeSphericalAddRenderOffset", function( um )
 		
+		--[[
 		local id = um:ReadShort()
 		local offset = um:ReadVector()
 		
@@ -292,26 +290,54 @@ if CLIENT then
 			MakeSpherical.RenderOffsetEnts[ id ] = csprop
 			
 		end
+		]]--
+		
+		local id = um:ReadShort()
+		local offset = um:ReadVector()
+		local ent = Entity( id )
+		
+		if not ent:IsValid() then
+		
+			temp[ id ] = offset
+			return
+			
+		end
+		
+		ent.RenderOverride = function( self )
+			
+			ent:SetRenderOrigin( ent:LocalToWorld( offset ) )
+			ent:SetupBones()
+			if ent.Draw then ent:Draw() else ent:DrawModel() end
+			ent:SetRenderOrigin( nil )
+		
+		end
 		
 	end )
 	
 	usermessage.Hook( "MakeSphericalRemoveRenderOffset", function( um )
 	
+		--[[
 		local id = um:ReadShort()
 		local ent = Entity( id )
-		
-		if MakeSpherical.RenderOffsetEnts then 
+		print( "removing" )
+		if MakeSpherical.RenderOffsetEnts[ id ] then 
 			
 			ent:SetModelScale( Vector( 1, 1, 1 ) )
 			MakeSpherical.RenderOffsetEnts[ id ]:Remove()
-			table.remove( MakeSpherical.RenderOffsetEnts, id )
+			MakeSpherical.RenderOffsetEnt[ id ] = nil
 			
 		end
+		]]--
+		
+		local ent = Entity( um:ReadShort() )
+		ent.RenderOverride = nil
 		
 	end )
 	
 	hook.Add( "OnEntityCreated", "MakeSphericalEntityAddedDelay", function( ent )
 	
+		--[[
+		if not ent:IsValid() then return end
 		local id = ent:EntIndex()
 		if tempents[ id ] then
 			
@@ -338,20 +364,22 @@ if CLIENT then
 			tempents[ id ] = nil
 			
 		end
+		]]--
+		
+		local id = ent:EntIndex()
+		if not temp[ id ] then return end
+		
+		ent.RenderOverride = function( self )
+		
+			ent:SetRenderOrigin( offset )
+			ent:SetupBones()
+			if ent.Draw() then ent:Draw() else ent:DrawModel() end
+			ent:SetRenderOrigin( nil )
+			
+		end
+		
+		temp[ id ] = nil
 		
 	end )
 	
 end
-
-hook.Add( "EntityRemoved", "MakeSphericalUpdateLists", function( ent )
-	
-	if not ent then return end
-	local id = ent:EntIndex()
-	if MakeSpherical.RenderOffsetEnts[ id ] then
-		
-		if CLIENT and IsValid( MakeSpherical.RenderOffsetEnts[ id ] ) then MakeSpherical.RenderOffsetEnts[ id ]:Remove() end
-		MakeSpherical.RenderOffsetEnts[ id ] = nil
-		
-	end
-	
-end )

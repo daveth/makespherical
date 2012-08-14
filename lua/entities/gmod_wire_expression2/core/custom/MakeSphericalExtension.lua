@@ -15,7 +15,7 @@ e2function void entity:makeSpherical( number radius )
 
 	local constraintdata = MakeSpherical.CopyConstraintData( this, true )
 	MakeSpherical.ApplySphericalCollisionsE2( this, true, radius, nil )
-	timer.Simple( 0.01, MakeSpherical.ApplyConstraintData, this, constraintdata )
+	timer.Simple( 0.01, function() MakeSpherical.ApplyConstraintData( this, constraintdata ) end )
 
 end
 
@@ -25,6 +25,6 @@ e2function void entity:removeSpherical()
 
 	local constraintdata = MakeSpherical.CopyConstraintData( this, true )
 	MakeSpherical.ApplySphericalCollisionsE2( this, false, 0, nil )
-	timer.Simple( 0.01, MakeSpherical.ApplyConstraintData, this, constraintdata )
+	timer.Simple( 0.01, function() MakeSpherical.ApplyConstraintData( this, constraintdata ) end )
 	
 end
