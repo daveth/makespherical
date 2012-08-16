@@ -1,6 +1,4 @@
 
-/*
-
 Copyright (C) 2012 David 'Falcqn' Hepworth
 All rights not explicitly granted are reserved.
 
@@ -22,28 +20,3 @@ the warranties of fitness for a particular purpose and noninfringement. In no ev
 holders be held liable for any claim, damages or other liability, whether in an action of contract, tort or otherwise
 arising from, out of, or in connection with the software or the use of other dealings in the software.
 Under no circumstances may this license be removed from any of the Software's files, documentation or code.
-
-*/
-
-MakeSpherical = MakeSpherical or {}
-local MakeSpherical = MakeSpherical
-
-e2function void entity:makeSpherical( number radius )
-
-	if not MakeSpherical.CanTool( this ) then return false end
-
-	local constraintdata = MakeSpherical.CopyConstraintData( this, true )
-	MakeSpherical.ApplySphericalCollisionsE2( this, true, radius, nil )
-	timer.Simple( 0.01, function() MakeSpherical.ApplyConstraintData( this, constraintdata ) end )
-
-end
-
-e2function void entity:removeSpherical()
-
-	if not MakeSpherical.CanTool( this ) then return false end
-
-	local constraintdata = MakeSpherical.CopyConstraintData( this, true )
-	MakeSpherical.ApplySphericalCollisionsE2( this, false, 0, nil )
-	timer.Simple( 0.01, function() MakeSpherical.ApplyConstraintData( this, constraintdata ) end )
-	
-end
