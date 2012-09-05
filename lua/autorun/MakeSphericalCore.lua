@@ -394,7 +394,7 @@ if CLIENT then
 		
 			ent:SetRenderOrigin( offset )
 			ent:SetupBones()
-			if ent.Draw() then ent:Draw() else ent:DrawModel() end
+			if ent.Draw then ent:Draw() else ent:DrawModel() end
 			ent:SetRenderOrigin( nil )
 			
 		end
