@@ -43,14 +43,8 @@ if CLIENT then
 	
 	language.Add( "tool.makespherical.name", "Spherical Collisions" )
 	language.Add( "tool.makespherical.desc", "Gives entities a spherical collisions with a defined radius" )
-	language.Add( "tool.makespherical.0", "Left click to make an Ent have spherical collisions based on its size. Right click to set collisions with a custom radius" )
-	language.Add( "tool.makespherical.1", "Left click to make an Ent have spherical collisions based on its size. Right click to set collisions with a custom radius" )
-	
-	--gm12
-	language.Add( "tool_makespherical_name", "Spherical Collisions" )
-	language.Add( "tool_makespherical_desc", "Gives entities a spherical collisions with a defined radius" )
-	language.Add( "tool_makespherical_0", "Left click to make an Ent have spherical collisions based on its size. Right click to set collisions with a custom radius" )
-	language.Add( "tool_makespherical_1", "Left click to make an Ent have spherical collisions based on its size. Right click to set collisions with a custom radius" )
+	language.Add( "tool.makespherical.0", "Left click to make an entity have spherical collisions based on its size. Right click to set collisions with a custom radius" )
+	language.Add( "tool.makespherical.1", "Left click to make an entity have spherical collisions based on its size. Right click to set collisions with a custom radius" )
 	
 	function TOOL.BuildCPanel( panel )
 		
