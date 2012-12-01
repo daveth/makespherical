@@ -37,6 +37,7 @@ function MakeSpherical.CanTool( ent )
 	if (
 		not ent:IsValid()
 		or string.find( ent:GetClass(), "npc_" ) or ( ent:GetClass() == "player" )
+		or string.find( ent:GetClass(), "prop_vehicle_" ) 
 		or ( ent:GetClass() == "prop_ragdoll" )
 		or ( ent:GetMoveType() ~= MOVETYPE_VPHYSICS )
 		or ( SERVER && not ent:GetPhysicsObject():IsValid() ) )
@@ -100,7 +101,7 @@ if SERVER then
 	end
 	
 	function MakeSpherical.ApplySphericalCollisions( ply, ent, data )
-	
+		
 		local phys = ent:GetPhysicsObject()
 		local ismove = phys:IsMoveable()
 		local issleep = phys:IsAsleep()
@@ -276,43 +277,6 @@ if CLIENT then
 	
 	usermessage.Hook( "MakeSphericalAddRenderOffset", function( um )
 		
-		--[[
-		local id = um:ReadShort()
-		local offset = um:ReadVector()
-		
-		if not Entity( id ) then 
-				
-			tempents[ id ] = offset  
-				
-		else
-		
-			local ent = Entity( id )
-			local csprop
-			
-			if not IsValid( MakeSpherical.RenderOffsetEnts[ id ] ) then
-			
-				csprop = ClientsideModel( ent:GetModel() )
-				
-			else
-			
-				csprop = MakeSpherical.RenderOffsetEnts[ id ]
-				
-			end
-			
-			csprop:SetPos( ent:LocalToWorld( offset ) )
-			csprop:SetAngles( ent:GetAngles() )
-			csprop:SetParent( ent )
-			csprop:SetColor( ent:GetColor() )
-			csprop:SetMaterial( ent:GetMaterial() )
-			csprop:SetSkin( ent:GetSkin() )
-			
-			ent:SetModelScale( Vector( 0 ) )
-			
-			MakeSpherical.RenderOffsetEnts[ id ] = csprop
-			
-		end
-		]]--
-		
 		local id = um:ReadShort()
 		local offset = um:ReadVector()
 		local ent = Entity( id )
@@ -336,19 +300,6 @@ if CLIENT then
 	end )
 	
 	usermessage.Hook( "MakeSphericalRemoveRenderOffset", function( um )
-	
-		--[[
-		local id = um:ReadShort()
-		local ent = Entity( id )
-		print( "removing" )
-		if MakeSpherical.RenderOffsetEnts[ id ] then 
-			
-			ent:SetModelScale( Vector( 1, 1, 1 ) )
-			MakeSpherical.RenderOffsetEnts[ id ]:Remove()
-			MakeSpherical.RenderOffsetEnt[ id ] = nil
-			
-		end
-		]]--
 		
 		local ent = Entity( um:ReadShort() )
 		ent.RenderOverride = nil
@@ -356,36 +307,6 @@ if CLIENT then
 	end )
 	
 	hook.Add( "OnEntityCreated", "MakeSphericalEntityAddedDelay", function( ent )
-	
-		--[[
-		if not ent:IsValid() then return end
-		local id = ent:EntIndex()
-		if tempents[ id ] then
-			
-			if not IsValid( MakeSpherical.RenderOffsetEnts[ id ] ) then
-			
-				local csprop = ClientsideModel( ent:GetModel() )
-				
-			else
-			
-				local csprop = MakeSpherical.RenderOffsetEnts[ id ]
-				
-			end
-			
-			csprop:SetPos( ent:LocalToWorld( offset ) )
-			csprop:SetAngles( ent:GetAngles() )
-			csprop:SetParent( ent )
-			csprop:SetColor( ent:GetColor() )
-			csprop:SetMaterial( ent:GetMaterial() )
-			csprop:SetSkin( ent:GetSkin() )
-			
-			ent:SetModelScale( Vector( 0 ) )
-		
-			MakeSpherical.RenderOffsetEnts[ id ] = csprop
-			tempents[ id ] = nil
-			
-		end
-		]]--
 		
 		local id = ent:EntIndex()
 		if not temp[ id ] then return end
