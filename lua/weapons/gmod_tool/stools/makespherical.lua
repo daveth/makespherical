@@ -28,7 +28,7 @@ Under no circumstances may this license be removed from any of the Software's fi
 AddCSLuaFile( "makespherical.lua" )
 
 TOOL.Category 		= "Construction"
-TOOL.Name 			= "#MakeSpherical"
+TOOL.Name 			= "#tool.makespherical.name"
 TOOL.Command 		= nil
 TOOL.ConfigName 	= nil
 
