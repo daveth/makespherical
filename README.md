@@ -5,33 +5,20 @@ This tool will modify the collision hull of the desired entity to be a perfect s
 The visual center of the entity may also be offset by a given vector.
 
 ## License
+Copyright (C) 2013 David 'Falcqn' Hepworth
 
-Copyright (C) 2012 David 'Falcqn' Hepworth [davidhepp2@gmail.com]
-All rights not explicitly granted are reserved.
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated 
+documentation files (the "Software"), to deal in the Software without restriction, including without limitation 
+the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, 
+and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and assosciated files 
-(the "software") to use the software without restriction in any and all compatible environments, regardless of whether 
-the use is part of a for-profit organisation or not. The software itself may UNDER NO CIRCUMSTANCES be sold, traded or 
-monetised in any fashion whatsoever.
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
-The software may NOT be reuploaded to any distributor or redistributed at all unless given express written consent by all 
-authors and copyright holders. The software is free to modify for personal use, including but not limited to use on servers 
-whether they be "for-profit" organisations or not, provided that this license is left unaltered in any way. 
-Again, the software itself may UNDER NO CIRCUMSTANCES be sold, traded or monetised in any fashion whatsoever. 
-Any modifications of the software may not be distributed unless either express written consent is given by the authors and
-copyright holders, or the modifications are part of a "FORK" on the website "GitHub".
-
-The software and all of its assets included are property of their respective author(s).
-The software is provided "As-Is" without warranty of any kind, express or implied, including but not limited to
-the warranties of fitness for a particular purpose and noninfringement. In no event shall the authors or copyright
-holders be held liable for any claim, damages or other liability, whether in an action of contract, tort or otherwise
-arising from, out of, or in connection with the software or the use of other dealings in the software.
-Under no circumstances may this license be removed from any of the Software's files, documentation or code.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES 
+OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS 
+BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF 
+OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ## TL;DR for the license
 
-You can't sell this, but it's okay to use on your servers even if the servers are for profit.
-It's okay to modify the code FOR YOUR OWN USE, but you can not upload this or the modified version anywhere.
-You're not allowed to remove the license from the files, or change it at all.
-If you want to redistribute either this addon, or any modified versions of it, feel free to either fork the repository on
-GitHub, or email me at davidhepp2@gmail.com and we'll talk about it ;)
+Do what you want as long as you include the original copyright, and you can't blame me if your computer is blown up by aliens
