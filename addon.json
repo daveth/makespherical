@@ -1,0 +1,11 @@
+{
+	"title"		:	"MakeSpherical",
+	"type"		:	"tool",
+	"tags"		:	[ "fun", "build" ],
+	"ignore"	:
+	[
+		"*.json",
+		"*.md",
+		"*.git*"
+	]
+}
