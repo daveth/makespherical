@@ -137,6 +137,7 @@ if SERVER then
 		
 		data.radius = radius
 		ent.noradius = data.noradius
+		PrintTable(data)
 		duplicator.StoreEntityModifier( ent, "MakeSphericalCollisions", data )
 		
 	end
@@ -168,6 +169,16 @@ if SERVER then
 		phys:EnableMotion( ismove )
 		if not issleep then phys:Wake() end
 		
+			local data = {}
+			data.enabled = true
+			data.isrenderoffset = 0
+			data.mass = mass
+			data.obbcenter = ent:OBBCenter()
+			data.radius = radius
+			data.renderoffset = Vector(0,0,0)
+			ent.noradius = data.noradius
+
+		duplicator.StoreEntityModifier( ent, "MakeSphericalCollisions", data )
 	end
 	
 	function MakeSpherical.CopyConstraintData( ent, removeconstraints )
