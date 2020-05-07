@@ -137,7 +137,6 @@ if SERVER then
 		
 		data.radius = radius
 		ent.noradius = data.noradius
-		PrintTable(data)
 		duplicator.StoreEntityModifier( ent, "MakeSphericalCollisions", data )
 		
 	end
@@ -178,7 +177,7 @@ if SERVER then
 			data.renderoffset = Vector(0,0,0)
 			ent.noradius = data.noradius
 
-		duplicator.StoreEntityModifier( ent, "MakeSphericalCollisions", data )
+      duplicator.StoreEntityModifier( ent, "MakeSphericalCollisions", data )
 	end
 	
 	function MakeSpherical.CopyConstraintData( ent, removeconstraints )
