@@ -1,4 +1,3 @@
-
 --[[
 Copyright (C) 2013 David 'Falcqn' Hepworth
 
@@ -47,7 +46,7 @@ if SERVER then
 
 	function MakeSpherical.ApplyLegacySphere( ply, ent, data )
 
-		if not hook.Run( "MakeSpherical_PreMakeSphericalLegacy", ply, ent, data ) then return end
+		if hook.Run( "MakeSpherical_PreMakeSphericalLegacy", ply, ent, data ) == false then return end
 
 		local obb = ent:OBBMaxs() - ent:OBBMins()
 		ent.noradius = ent.noradius or math.max( obb.x, obb.y, obb.z ) / 2
@@ -96,7 +95,7 @@ if SERVER then
 
 	function MakeSpherical.ApplySphericalCollisions( ply, ent, data )
 
-		if not hook.Run( "MakeSpherical_PreMakeSpherical", ply, ent, data ) then return end
+		if hook.Run( "MakeSpherical_PreMakeSpherical", ply, ent, data ) == false then return end
 
 		local phys = ent:GetPhysicsObject()
 		local ismove = phys:IsMoveable()
@@ -152,7 +151,7 @@ if SERVER then
 
 	function MakeSpherical.ApplySphericalCollisionsE2( ent, enabled, radius )
 
-		if not hook.Run( "MakeSpherical_PreMakeSphericalE2", ent, enabled, radius ) then return end
+		if hook.Run( "MakeSpherical_PreMakeSphericalE2", ent, enabled, radius ) == false then return end
 
 		local phys = ent:GetPhysicsObject()
 		local mass = phys:GetMass()
