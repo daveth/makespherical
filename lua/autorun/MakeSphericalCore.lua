@@ -287,7 +287,7 @@ if CLIENT then
 
 	net.Receive( "MakeSpherical_AddRenderOffset", function()
 
-		local id = net.ReadUInt()
+		local id = net.ReadUInt( 13 )
 		local offset = net.ReadVector()
 		local ent = Entity( id )
 
@@ -311,8 +311,9 @@ if CLIENT then
 
 	net.Receive( "MakeSpherical_RemoveRenderOffset", function()
 
-		local id = net.ReadUInt()
+		local id = net.ReadUInt( 13 )
 		local ent = Entity( id )
+		if not IsValid( ent ) then return end
 		ent.RenderOverride = nil
 
 	end )
