@@ -35,10 +35,12 @@ if CLIENT then
 	language.Add( "tool.makespherical.desc", "Gives entities spherical collisions with a defined radius" )
 	language.Add( "tool.makespherical.left", "Give an entity spherical collisions based on its size" )
 	language.Add( "tool.makespherical.right", "Set collisions with a custom radius" )
+	language.Add( "tool.makespherical.reload", "Reset to original collisions" )
 
 	TOOL.Information = {
 		{ name = "left" },
-		{ name = "right" }
+		{ name = "right" },
+		{ name = "reload" }
 	}
 
 	function TOOL.BuildCPanel( panel )
