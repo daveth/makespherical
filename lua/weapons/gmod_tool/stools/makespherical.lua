@@ -30,17 +30,17 @@ TOOL.ClientConVar[ "offset_z" ] 	= "0"
 TOOL.ClientConVar[ "useobbcenter" ] = "0"
 
 if CLIENT then
-	
+
 	language.Add( "tool.makespherical.name", "Spherical Collisions" )
 	language.Add( "tool.makespherical.desc", "Gives entities a spherical collisions with a defined radius" )
 	language.Add( "tool.makespherical.0", "Left click to make an entity have spherical collisions based on its size. Right click to set collisions with a custom radius" )
 	language.Add( "tool.makespherical.1", "Left click to make an entity have spherical collisions based on its size. Right click to set collisions with a custom radius" )
-	
+
 	function TOOL.BuildCPanel( panel )
-		
+
 		panel:AddControl( "Header", { Text = "#tool.makespherical.name", Description = "#tool.makespherical.desc" } )
-		
-		panel:AddControl( "Slider", 
+
+		panel:AddControl( "Slider",
 		{
 			Label 	= "Set radius: ",
 			Type 	= "Float",
@@ -48,19 +48,19 @@ if CLIENT then
 			Max 	= "200",
 			Command = "makespherical_radius"
 		})
-		
+
 		panel:AddControl( "CheckBox",
 		{
 			Label = "Offset render origin?",
 			Command = "makespherical_offset"
 		})
-		
+
 		panel:AddControl( "Label",
 		{
 			Text = "Note: This only changes the position the prop's model is drawn at, getting the position or bounding box center in Lua or in "
 					.. "E2 will give the exact same coordinates.\nThe prop's position will still be the center of the sphere."
 		})
-		
+
 		panel:AddControl( "Slider",
 		{
 			Label 	= "X Offset",
@@ -69,7 +69,7 @@ if CLIENT then
 			Max 	= "100",
 			Command = "makespherical_offset_x"
 		})
-		
+
 		panel:AddControl( "Slider",
 		{
 			Label 	= "Y Offset",
@@ -78,7 +78,7 @@ if CLIENT then
 			Max 	= "100",
 			Command = "makespherical_offset_y"
 		})
-		
+
 		panel:AddControl( "Slider",
 		{
 			Label 	= "Z Offset",
@@ -87,13 +87,13 @@ if CLIENT then
 			Max 	= "100",
 			Command = "makespherical_offset_z"
 		})
-		
+
 		panel:AddControl( "CheckBox",
 		{
 			Label = "Offset position by bounding box center instead",
 			Command = "makespherical_useobbcenter"
 		})
-	
+
 	end
 
 end
@@ -105,19 +105,19 @@ function TOOL:LeftClick( trace )
 	if CLIENT then return true end
 
 	if not ent.noradius then
-	
+
 		local OBB = ent:OBBMaxs() - ent:OBBMins()
-		ent.noradius = math.max( OBB.x, OBB.y, OBB.z) / 2 
-		
+		ent.noradius = math.max( OBB.x, OBB.y, OBB.z) / 2
+
 	end
-	
+
 	ent.obbcenter = ent.obbcenter or ent:OBBCenter()
 	local offsetvec = Vector( self:GetClientNumber( "offset_x" ), self:GetClientNumber( "offset_y" ), self:GetClientNumber( "offset_z" ) )
-	
-	local data = 
+
+	local data =
 	{
-		// I store the obbcenter and "obb radius" because they are altered when SetCollisionBounds is used
-		// This allows the spherical collisions to be reset even after duping
+		-- I store the obbcenter and "obb radius" because they are altered when SetCollisionBounds is used
+		-- This allows the spherical collisions to be reset even after duping
 		obbcenter 		= ent.obbcenter,
 		noradius 		= ent.noradius,
 		radius 			= ent.noradius,
@@ -126,11 +126,11 @@ function TOOL:LeftClick( trace )
 		isrenderoffset 	= self:GetClientNumber( "offset" ),
 		renderoffset 	= ( self:GetClientNumber( "useobbcenter" ) == 1 ) and -ent.obbcenter or offsetvec
 	}
-	
+
 	local constraintdata = MakeSpherical.CopyConstraintData( ent, true )
 	MakeSpherical.ApplySphericalCollisions( self:GetOwner(), ent, data )
 	timer.Simple( 0.01, function() MakeSpherical.ApplyConstraintData( ent, constraintdata ) end )
-		
+
 	return true
 
 end
@@ -142,18 +142,18 @@ function TOOL:RightClick( trace )
 	if CLIENT then return true end
 
 	if not ent.noradius then
-	
+
 		local OBB = ent:OBBMaxs() - ent:OBBMins()
-		ent.noradius = math.max( OBB.x, OBB.y, OBB.z) / 2 
-		
+		ent.noradius = math.max( OBB.x, OBB.y, OBB.z) / 2
+
 	end
-	
+
 	ent.obbcenter = ent.obbcenter or ent:OBBCenter()
 	local offsetvec = Vector( self:GetClientNumber( "offset_x" ), self:GetClientNumber( "offset_y" ), self:GetClientNumber( "offset_z" ) )
 
-	local data = 
+	local data =
 	{
-		obbcenter		= ent.obbcenter,							
+		obbcenter		= ent.obbcenter,
 		noradius 		= ent.noradius,
 		radius 			= self:GetClientNumber( "radius" ),
 		mass			= ent:GetPhysicsObject():GetMass(),
@@ -161,11 +161,11 @@ function TOOL:RightClick( trace )
 		isrenderoffset 	= self:GetClientNumber( "offset" ),
 		renderoffset 	= ( self:GetClientNumber( "useobbcenter" ) == 1 ) and -ent.obbcenter or offsetvec
 	}
-	
+
 	local constraintdata = MakeSpherical.CopyConstraintData( ent, true )
 	MakeSpherical.ApplySphericalCollisions( self:GetOwner(), ent, data )
 	timer.Simple( 0.01, function() MakeSpherical.ApplyConstraintData( ent, constraintdata ) end )
-	
+
 	return true
 
 end
@@ -175,17 +175,17 @@ function TOOL:Reload( trace )
 	local ent = trace.Entity
 	if not MakeSpherical.CanTool( ent ) then return false end
 	if CLIENT then return true end
-	
+
 	if not ent.noradius then
-	
+
 		local OBB = ent:OBBMaxs() - ent:OBBMins()
-		ent.noradius = math.max( OBB.x, OBB.y, OBB.z) / 2 
-		
+		ent.noradius = math.max( OBB.x, OBB.y, OBB.z) / 2
+
 	end
-	
+
 	ent.obbcenter = ent.obbcenter or ent:OBBCenter()
-	
-	local data = 
+
+	local data =
 	{
 		obbcenter 		= ent.obbcenter,
 		noradius 		= ent.noradius,
@@ -195,11 +195,11 @@ function TOOL:Reload( trace )
 		isrenderoffset 	= 0,
 		renderoffset 	= nil
 	}
-	
+
 	local constraintdata = MakeSpherical.CopyConstraintData( ent, true )
 	MakeSpherical.ApplySphericalCollisions( self:GetOwner(), ent, data )
 	timer.Simple( 0.01, function() MakeSpherical.ApplyConstraintData( ent, constraintdata ) end )
-	
+
 	return true
-	
+
 end
