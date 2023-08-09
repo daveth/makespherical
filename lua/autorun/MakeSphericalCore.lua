@@ -17,6 +17,9 @@ OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 AddCSLuaFile( "MakeSphericalCore.lua" )
 
+util.AddNetworkString( "MakeSpherical_AddRenderOffset" )
+util.AddNetworkString( "MakeSpherical_RemoveRenderOffset" )
+
 MakeSpherical = MakeSpherical or {}
 local MakeSpherical = MakeSpherical
 
@@ -115,22 +118,22 @@ if SERVER then
 
 		if data.isrenderoffset ~= 0 then
 
-			umsg.Start( "MakeSphericalAddRenderOffset" )
+			net.Start( "MakeSpherical_AddRenderOffset" )
 
-				umsg.Short( ent:EntIndex() )
-				umsg.Vector( data.renderoffset )
+				net.WriteUInt( ent:EntIndex(), 13 )
+				net.WriteVector( data.renderoffset )
 
-			umsg.End()
+			net.Broadcast()
 
 			MakeSpherical.RenderOffsetEnts[ ent:EntIndex() ] = data.renderoffset
 
 		elseif data.isrenderoffset == 0 and MakeSpherical.RenderOffsetEnts[ ent:EntIndex() ] then
 
-			umsg.Start( "MakeSphericalRemoveRenderOffset" )
+			net.Start( "MakeSpherical_RemoveRenderOffset" )
 
-				umsg.Short( ent:EntIndex() )
+				net.WriteUInt( ent:EntIndex(), 13 )
 
-			umsg.End()
+			net.Broadcast()
 
 		end
 
@@ -246,7 +249,7 @@ if SERVER then
 			end
 
 			-- Apply the constraint
-			local constr, misc = factory.Func( unpack( args ) )
+			constr, _ = factory.Func( unpack( args ) )
 
 			-- Wheels need their ent.Motor value set to their motor constraint
 			if ent:GetClass() == "gmod_wheel" or ent:GetClass() == "gmod_wire_wheel" then
@@ -263,12 +266,12 @@ if SERVER then
 
 		for k, v in pairs( MakeSpherical.ApplySphericalCollisions ) do
 
-			umsg.Start( "MakeSphericalAddRenderOffset" )
+			net.Start( "MakeSpherical_AddRenderOffset" )
 
-				umsg.Short( k )
-				umsg.Vector( v )
+				net.WriteUInt( k, 13 )
+				net.WriteVector( v )
 
-			umsg.End()
+			net.Send( ply )
 
 		end
 
@@ -283,10 +286,10 @@ if CLIENT then
 
 	local temp = {}
 
-	usermessage.Hook( "MakeSphericalAddRenderOffset", function( um )
+	net.Receive( "MakeSpherical_AddRenderOffset", function()
 
-		local id = um:ReadShort()
-		local offset = um:ReadVector()
+		local id = net.ReadUInt()
+		local offset = net.ReadVector()
 		local ent = Entity( id )
 
 		if not ent:IsValid() then
@@ -296,7 +299,7 @@ if CLIENT then
 
 		end
 
-		ent.RenderOverride = function( self )
+		ent.RenderOverride = function()
 
 			ent:SetRenderOrigin( ent:LocalToWorld( offset ) )
 			ent:SetupBones()
@@ -307,9 +310,10 @@ if CLIENT then
 
 	end )
 
-	usermessage.Hook( "MakeSphericalRemoveRenderOffset", function( um )
+	net.Receive( "MakeSpherical_RemoveRenderOffset", function()
 
-		local ent = Entity( um:ReadShort() )
+		local id = net.ReadUInt()
+		local ent = Entity( id )
 		ent.RenderOverride = nil
 
 	end )
@@ -319,7 +323,7 @@ if CLIENT then
 		local id = ent:EntIndex()
 		if not temp[ id ] then return end
 
-		ent.RenderOverride = function( self )
+		ent.RenderOverride = function()
 
 			ent:SetRenderOrigin( offset )
 			ent:SetupBones()
