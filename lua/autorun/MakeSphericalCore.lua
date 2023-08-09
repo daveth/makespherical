@@ -17,9 +17,6 @@ OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 AddCSLuaFile( "MakeSphericalCore.lua" )
 
-util.AddNetworkString( "MakeSpherical_AddRenderOffset" )
-util.AddNetworkString( "MakeSpherical_RemoveRenderOffset" )
-
 MakeSpherical = MakeSpherical or {}
 local MakeSpherical = MakeSpherical
 
@@ -42,6 +39,8 @@ function MakeSpherical.CanTool( ent )
 end
 
 if SERVER then
+	util.AddNetworkString( "MakeSpherical_AddRenderOffset" )
+	util.AddNetworkString( "MakeSpherical_RemoveRenderOffset" )
 
 	MakeSpherical.RenderOffsetEnts = {}
 
