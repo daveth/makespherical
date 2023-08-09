@@ -39,6 +39,7 @@ function MakeSpherical.CanTool( ent )
 end
 
 if SERVER then
+
 	util.AddNetworkString( "MakeSpherical_AddRenderOffset" )
 	util.AddNetworkString( "MakeSpherical_RemoveRenderOffset" )
 

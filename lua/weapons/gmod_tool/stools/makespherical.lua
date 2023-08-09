@@ -31,10 +31,15 @@ TOOL.ClientConVar[ "useobbcenter" ] = "0"
 
 if CLIENT then
 
-	language.Add( "tool.makespherical.name", "Spherical Collisions" )
-	language.Add( "tool.makespherical.desc", "Gives entities a spherical collisions with a defined radius" )
-	language.Add( "tool.makespherical.0", "Left click to make an entity have spherical collisions based on its size. Right click to set collisions with a custom radius" )
-	language.Add( "tool.makespherical.1", "Left click to make an entity have spherical collisions based on its size. Right click to set collisions with a custom radius" )
+	language.Add( "tool.makespherical.name", "Make Spherical" )
+	language.Add( "tool.makespherical.desc", "Gives entities spherical collisions with a defined radius" )
+	language.Add( "tool.makespherical.left", "Give an entity spherical collisions based on its size" )
+	language.Add( "tool.makespherical.right", "Set collisions with a custom radius" )
+
+	TOOL.Information = {
+		{ name = "left" },
+		{ name = "right" }
+	}
 
 	function TOOL.BuildCPanel( panel )
 
