@@ -44,6 +44,8 @@ if SERVER then
 
 	function MakeSpherical.ApplyLegacySphere( ply, ent, data )
 
+		if not hook.Run( "MakeSpherical_PreMakeSphericalLegacy", ply, ent, data ) then return end
+
 		local obb = ent:OBBMaxs() - ent:OBBMins()
 		ent.noradius = ent.noradius or math.max( obb.x, obb.y, obb.z ) / 2
 		-- This is the default radius used when left-clicked with the tool, not set by the slider.
@@ -86,9 +88,12 @@ if SERVER then
 		duplicator.StoreEntityModifier( ent, "MakeSphericalCollisions", data )
 		duplicator.ClearEntityModifier( ent, "sphere" )
 
+		hook.Run( "MakeSpherical_PostMakeSphericalLegacy", ply, ent, data )
 	end
 
 	function MakeSpherical.ApplySphericalCollisions( ply, ent, data )
+
+		if not hook.Run( "MakeSpherical_PreMakeSpherical", ply, ent, data ) then return end
 
 		local phys = ent:GetPhysicsObject()
 		local ismove = phys:IsMoveable()
@@ -139,9 +144,12 @@ if SERVER then
 		ent.noradius = data.noradius
 		duplicator.StoreEntityModifier( ent, "MakeSphericalCollisions", data )
 
+		hook.Run( "MakeSpherical_PostMakeSpherical", ply, ent, data )
 	end
 
 	function MakeSpherical.ApplySphericalCollisionsE2( ent, enabled, radius )
+
+		if not hook.Run( "MakeSpherical_PreMakeSphericalE2", ent, enabled, radius ) then return end
 
 		local phys = ent:GetPhysicsObject()
 		local mass = phys:GetMass()
@@ -178,6 +186,8 @@ if SERVER then
 			ent.noradius = data.noradius
 
 		duplicator.StoreEntityModifier( ent, "MakeSphericalCollisions", data )
+
+		hook.Run( "MakeSpherical_PostMakeSphericalE2", ent, enabled, radius )
 	end
 
 	function MakeSpherical.CopyConstraintData( ent, removeconstraints )
