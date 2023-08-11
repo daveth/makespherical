@@ -91,6 +91,7 @@ if SERVER then
 		duplicator.ClearEntityModifier( ent, "sphere" )
 
 		hook.Run( "MakeSpherical_PostMakeSphericalLegacy", ply, ent, data )
+
 	end
 
 	function MakeSpherical.ApplySphericalCollisions( ply, ent, data )
@@ -147,6 +148,7 @@ if SERVER then
 		duplicator.StoreEntityModifier( ent, "MakeSphericalCollisions", data )
 
 		hook.Run( "MakeSpherical_PostMakeSpherical", ply, ent, data )
+
 	end
 
 	function MakeSpherical.ApplySphericalCollisionsE2( ent, enabled, radius )
@@ -190,6 +192,7 @@ if SERVER then
 		duplicator.StoreEntityModifier( ent, "MakeSphericalCollisions", data )
 
 		hook.Run( "MakeSpherical_PostMakeSphericalE2", ent, enabled, radius )
+
 	end
 
 	function MakeSpherical.CopyConstraintData( ent, removeconstraints )
